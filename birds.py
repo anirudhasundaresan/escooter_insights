@@ -10,37 +10,42 @@ Obtaining API acess:
 - Write the listing to a CSV
 '''
 
+# Birds are available only between 4AM - 9PPM. 
 # I will focus on getting the Bird bike data first.
 import requests
 import json
+from random import randint
 
 url = 'https://api.bird.co/user/login'
 
-payload = {"email": "ihaadvr@g.com"}
+# str(randint(0,900))
+
+payload = {"email": "ihfde" + "@vfdv.cm"}
 headers = {'Device-id': '123e4567-e89b-12d3-a456-426655440000', 'Platform': 'ios', 'Content-type': 'application/json'}
 
 r = requests.post(url, data=json.dumps(payload), headers=headers)
 print(r.text) # this is a string! - not a dictionary
 print(type(r.text))
-# token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBVVRIIiwidXNlcl9pZCI6Ijg0Yjk3N2RmLTM5MjMtNGM4NS1iYjc4LTM3OWI5MjYyNzAxNSIsImRldmljZV9pZCI6IjEyM2U0NTY3LWU4OWItMTJkMy1hNDU2LTQyNjY1NTQ0MDAwMCIsImV4cCI6MTU3OTA3NjkyOX0.iIXwWpyTngCWMyyyGjvPKdgmwaI1FuE1isucQx5lBiI"
 
-token = json.loads(r.text)['token']
-print(type(token))
+token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBVVRIIiwidXNlcl9pZCI6ImM5YTVlNzM2LWRlMjctNGFkNy1hMGI2LTA2OWZkMWJhN2YzMyIsImRldmljZV9pZCI6IjEyM2U0NTY3LWU4OWItMTJkMy1hNDU2LTQyNjY1NTQ0MDkwMCIsImV4cCI6MTU3OTMzMjA1NH0.-LA0hg3gr9hPKXKLrvSPbElggWrJjDZDWUpPXJmGWhw"
+
+# token = json.loads(r.text)['token']
+# print(type(token))
 
 '''
-
 As I change any part of the payload, I get a new id and token.
 This token has an expiry time, but this gets extended everytime you call the above. Your ID changes, but your token remains the same.
 
 This token is what we will be using to get the location and data about the bikes.
 '''
 
-url_ = 'https://api.bird.co/bird/nearby?latitude=33.782678&longitude=-84.396896&radius=2000'
-headers_ = {'Authorization': 'Bird {}'.format(token), 'Device-id': '123e4567-e89b-12d3-a456-426655440000', 'App-Version': '3.0.5', 'Location': '{"latitude":33.782678 ,"longitude":-84.396896,"altitude":500,"accuracy":100,"speed":-1,"heading":-1}'}
+url_ = 'https://api.bird.co/bird/nearby?latitude=37.77216&longitude=-122.409485&radius=000'
+headers_ = {'Authorization': 'Bird {}'.format(token), 'Device-id': '123e4567-e89b-12d3-a456-426655440000', 'App-Version': '3.0.5', \
+'Location': '{"latitude":37.77216, "longitude":"-122.409485","altitude":500,"accuracy":100,"speed":-1,"heading":-1}'}
 # see how altitude, accuracy, speed and heading matter?
 
-r_ = requests.get(url_, headers=headers_)
-print(r_)
-print(json.loads(r_.content))
+r = requests.get(url_, headers=headers_)
+print(r)
+print(r.text)
 
-# see how you are going to manage data. 
+# see how you are going to manage data.
