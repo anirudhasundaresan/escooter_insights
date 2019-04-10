@@ -12,63 +12,94 @@ Obtaining API acess:
 
 # Birds are available only between 4AM - 9PPM.
 # I will focus on getting the Bird bike data first.
-import requests
 import json
-from random import randint
+import sys
+import time
 import pprint
+import requests
+import mplleaflet
+import networkx as nx
+from random import randint
+import matplotlib.pyplot as plt
 
-url = 'https://api.bird.co/user/login'
+i = 0
+while True:
+    url = 'https://api.bird.co/user/login'
 
-# str(randint(0,900))
+    payload = {"email": "xfe" + "@vfdv.cm"}
+    headers = {'Device-id': '123e4567-e89b-12d3-a456-426655440000', 'Platform': 'ios', 'Content-type': 'application/json'}
 
-payload = {"email": "ife" + "@vfdv.cm"}
-headers = {'Device-id': '123e4567-e89b-12d3-a456-426655440000', 'Platform': 'ios', 'Content-type': 'application/json'}
+    r = requests.post(url, data=json.dumps(payload), headers=headers)
+    print(r.text) # this is a string! - not a dictionary
+    # print(type(r.text))
 
-r = requests.post(url, data=json.dumps(payload), headers=headers)
-# print(r.text) # this is a string! - not a dictionary
-# print(type(r.text))
+    token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBVVRIIiwidXNlcl9pZCI6ImVjMThiZTdmLTI5YmEtNGYyZC04OGNjLTA5NTM1ZDhmYjE2NyIsImRldmljZV9pZCI6IjEyM2U0NTY3LWU4OWItMTJkMy1hNDU2LTQyNjY1NTQ0MDAwMCIsImV4cCI6MTU4NjM3NzAyOX0.aLzI3oGyhraK1swpa3Ew7saMrqW6Y-aKawOSXcZmIhQ"
 
-token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBVVRIIiwidXNlcl9pZCI6ImM5YTVlNzM2LWRlMjctNGFkNy1hMGI2LTA2OWZkMWJhN2YzMyIsImRldmljZV9pZCI6IjEyM2U0NTY3LWU4OWItMTJkMy1hNDU2LTQyNjY1NTQ0MDkwMCIsImV4cCI6MTU3OTMzMjA1NH0.-LA0hg3gr9hPKXKLrvSPbElggWrJjDZDWUpPXJmGWhw"
+    # token = json.loads(r.text)['token']
+    # print(type(token))
 
-# token = json.loads(r.text)['token']
-# print(type(token))
+    '''
+    As I change any part of the payload, I get a new id and token.
+    This token has an expiry time, but this gets extended everytime you call the above. Your ID changes, but your token remains the same.
 
-'''
-As I change any part of the payload, I get a new id and token.
-This token has an expiry time, but this gets extended everytime you call the above. Your ID changes, but your token remains the same.
+    This token is what we will be using to get the location and data about the bikes.
+    '''
 
-This token is what we will be using to get the location and data about the bikes.
-'''
+    url_ = 'https://api.bird.co/bird/nearby?latitude=33.7746&longitude=-84.3973&radius=1000'
+    # GT Tech Green coordinates given
 
-url_ = 'https://api.bird.co/bird/nearby?latitude=33.775620&longitude=-84.396286&radius=00.0000111'
-headers_ = {'Authorization': 'Bird {}'.format(token), 'Device-id': '123e4567-e89b-12d3-a456-426655440000', 'App-Version': '3.0.5', \
-'Location': '{"latitude":33.775620, "longitude":"-84.396286","altitude":500,"accuracy":100,"speed":-1,"heading":-1}'}
-# see how altitude, accuracy, speed and heading matter?
+    headers_ = {'Authorization': 'Bird {}'.format(token), 'Device-id': '123e4567-e89b-12d3-a456-426655440000', 'App-Version': '3.0.5', \
+    'Location': '{"latitude":33.775620, "longitude":"-84.396286","altitude":500,"accuracy":100,"speed":-1,"heading":-1}'}
+    # see how altitude, accuracy, speed and heading matter?
 
-r = requests.get(url_, headers=headers_)
-# print(r)
-parsed_data = json.loads(r.text)
+    r = requests.get(url_, headers=headers_)
+    parsed_data = json.loads(r.text)
 
-'''
-for key in parsed_data:
-    print("Key: ", key)
+    for key in parsed_data:
+        print("Key: ", key)
 
-print("Under key=birds: ", parsed_data['birds'], " and number of birds in this radius: ", len(parsed_data['birds']))
-print("Under key=clusters", parsed_data['clusters'], "and number of clusters: ", len(parsed_data['clusters']))
-print("Under key=areas", parsed_data['areas'], "and number of areas: ", len(parsed_data['areas']))
-'''
-'''
-with open('birds.csv', mode='w') as in_file:
-    print("ID, Latitude, Longitude, Code, Captive, Battery_level \n")
-    for id in parsed_data['birds']: # is a list
-        print(id['id'], ',', id['location']['latitude'], ',', id['location']['longitude'], ',', id['code'], ',', id['captive'], ',', id['battery_level'], '\n')
-# see how you are going to manage data.
-'''
+    print("Number of birds in this radius: ", len(parsed_data['birds']))
+    print("Number of clusters: ", len(parsed_data['clusters']))
+    print("Number of areas: ", len(parsed_data['areas']))
 
-ls = []
-# check if the ids from these bikes are all unique, and that each id represents the same bike.
-for id in parsed_data['birds']:
-    ls.append(id['id'])
-print(len(ls))
-ls.sort()
-print(ls)
+    temp = sys.stdout
+    sys.stdout = open('birds_'+str(i)+'.csv', 'w')
+    with open('birds_'+str(i)+'.csv', mode='w') as in_file:
+        print("ID, Latitude, Longitude, Code, Captive, Battery_level \n")
+        for id in parsed_data['birds']: # is a list
+            print(id['id'], ',', id['location']['latitude'], ',', id['location']['longitude'], ',', id['code'], ',', id['captive'], ',', id['battery_level'], '\n')
+    # see how you are going to manage data.
+    sys.stdout.close() # ordinary file object
+    sys.stdout = temp
+
+    # making the graph
+    G = nx.Graph()
+
+    '''
+    nx.draw(G, nx.get_node_attributes(G, 'pos'), with_labels=True, node_size=5)
+    plt.savefig(str(i) + '.png')
+    plt.clf()
+    time.sleep(0)
+    '''
+
+
+    color_map = [] # to play with battery percentages
+    pos = {}
+    fig, ax = plt.subplots()
+    for bike in parsed_data['birds']:
+        if bike['battery_level'] < 25:
+            color_map.append('red')
+        elif bike['battery_level'] < 50:
+            color_map.append('orange')
+        elif bike['battery_level'] < 75:
+            color_map.append('blue')
+        else:
+            color_map.append('black')
+        G.add_node(bike['id'], pos=(bike['location']['longitude'], bike['location']['latitude']))
+        pos[bike['id']] = [bike['location']['longitude'], bike['location']['latitude']]
+    nx.draw_networkx_nodes(G,pos=pos,node_size=9,edge_color='k',alpha=0.6, with_labels=False, node_color = color_map)
+    # nx.draw_networkx_edges(G,pos=pos,edge_color='gray', alpha=.1)
+    # nx.draw_networkx_labels(G,pos, label_pos =10.3)
+    mplleaflet.show(fig=ax.figure)
+    i += 1
+    time.sleep(120)
