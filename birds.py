@@ -13,13 +13,17 @@ Obtaining API acess:
 # Birds are available only between 4AM - 9PPM.
 # I will focus on getting the Bird bike data first.
 import json
+import os
 import sys
 import time
 import pprint
 import requests
+import webbrowser
+# from PyQt5 import Qt
 import mplleaflet
 import networkx as nx
 from random import randint
+import pyscreenshot as ImageGrab
 import matplotlib.pyplot as plt
 
 i = 0
@@ -101,5 +105,24 @@ while True:
     # nx.draw_networkx_edges(G,pos=pos,edge_color='gray', alpha=.1)
     # nx.draw_networkx_labels(G,pos, label_pos =10.3)
     mplleaflet.show(fig=ax.figure)
+
+    im_name = 'map_' + str(i) + '.png'
+    fullpath = os.path.abspath('.')
+    '''
+    with open(fullpath, 'w') as f:
+        save_html(fig, fileobj=f, **kwargs)
+    '''
+    webbrowser.open('file://' + fullpath + '/_map.html')
+    # save an screenshot
+    if (im_name):
+        # wait for some seconds until map is ready
+
+        # time.sleep(5)
+        im = ImageGrab.grab(bbox=(80, 100, 1905, 1070)) # X1,Y1,X2,Y2
+        im.show()
+        im.save(fullpath + '/' + im_name)
+        print("Screenshot saved at: "+ im_name)
+        im.show()
+
     i += 1
-    time.sleep(120)
+    # time.sleep(12)
